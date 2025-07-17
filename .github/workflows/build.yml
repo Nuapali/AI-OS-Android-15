@@ -10,8 +10,11 @@ jobs:
     steps:
     - name: Setup Environment
       run: |
+        sudo dpkg --add-architecture i386
         sudo apt update
-        sudo apt install bc bison build-essential curl flex g++-multilib gcc-multilib git gnupg gperf imagemagick lib32ncurses5-dev lib32readline-dev lib32z1-dev liblz4-tool libncurses5-dev libsdl1.2-dev libssl-dev libxml2 libxml2-utils lzop pngcrush rsync schedtool squashfs-tools xsltproc zip zlib1g-dev repo openjdk-17-jdk -y
+        sudo apt install bc bison build-essential curl flex g++-multilib gcc-multilib git gnupg gperf imagemagick \
+        libncurses5-dev libncurses5-dev:i386 libreadline-dev:i386 zlib1g:i386 liblz4-tool libxml2-utils \
+        lzop pngcrush rsync schedtool squashfs-tools xsltproc zip zlib1g-dev openjdk-17-jdk repo -y
 
     - name: Init crDroid Source
       run: |
@@ -33,11 +36,3 @@ jobs:
       run: |
         cd rom
         source build/envsetup.sh
-        lunch lineage_citrus-userdebug
-        mka bacon -j8
-
-    - name: Upload to Telegram
-      run: |
-        cd rom/out/target/product/citrus
-        ZIP=$(ls crDroid*.zip | head -n 1)
-        curl -F document=@"$ZIP" "https://api.telegram.org/bot7713120445:AAEDyx1NDy2lqrTWk90rCqT5kV6ewjStbsc/sendDocument?chat_id=7937734534"
