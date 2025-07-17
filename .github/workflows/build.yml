@@ -1,4 +1,4 @@
-name: Build LineageOS 21 for Citrus
+name: Build AOSP 14 for Citrus
 
 on:
   workflow_dispatch:
@@ -13,31 +13,31 @@ jobs:
         sudo apt update
         sudo apt install bc bison build-essential curl flex g++-multilib gcc-multilib git gnupg gperf imagemagick lib32ncurses5-dev lib32readline-dev lib32z1-dev liblz4-tool libncurses5-dev libsdl1.2-dev libssl-dev libxml2 libxml2-utils lzop pngcrush rsync schedtool squashfs-tools xsltproc zip zlib1g-dev repo openjdk-17-jdk -y
 
-    - name: Initialize ROM Source
+    - name: Initialize AOSP Source
       run: |
         mkdir rom
         cd rom
         curl https://storage.googleapis.com/git-repo-downloads/repo > repo
         chmod a+x repo
-        ./repo init -u https://github.com/LineageOS/android.git -b lineage-21 --depth=1
+        ./repo init -u https://android.googlesource.com/platform/manifest -b android-14.0.0_r30 --depth=1
         ./repo sync -c --no-tags --no-clone-bundle --force-sync -j8
 
     - name: Clone Device Trees
       run: |
         cd rom
-        git clone https://github.com/LineageOS/android_device_xiaomi_citrus.git -b lineage-21 device/xiaomi/citrus
-        git clone https://github.com/LineageOS/android_vendor_xiaomi_citrus.git -b lineage-21 vendor/xiaomi/citrus
-        git clone https://github.com/LineageOS/android_kernel_xiaomi_sm6115.git -b lineage-21 kernel/xiaomi/sm6115
+        git clone https://github.com/PixelExtended-Devices/device_xiaomi_citrus.git -b fourteen device/xiaomi/citrus
+        git clone https://github.com/PixelExtended-Devices/vendor_xiaomi_citrus.git -b fourteen vendor/xiaomi/citrus
+        git clone https://github.com/PixelExtended-Devices/kernel_xiaomi_sm6115.git -b fourteen kernel/xiaomi/sm6115
 
-    - name: Build ROM
+    - name: Build AOSP ROM
       run: |
         cd rom
         source build/envsetup.sh
-        lunch lineage_citrus-userdebug
+        lunch aosp_citrus-userdebug
         mka bacon -j8
 
     - name: Upload ROM to Telegram
       run: |
         cd rom/out/target/product/citrus
-        ZIP=$(ls lineage-*.zip | head -n 1)
+        ZIP=$(ls aosp_*.zip | head -n 1)
         curl -F document=@"$ZIP" "https://api.telegram.org/bot7713120445:AAEDyx1NDy2lqrTWk90rCqT5kV6ewjStbsc/sendDocument?chat_id=7937734534"
