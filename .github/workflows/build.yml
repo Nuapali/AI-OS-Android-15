@@ -1,4 +1,4 @@
-name: Build AOSP 14 for Citrus
+name: Build crDroid 10 for Citrus
 
 on:
   workflow_dispatch:
@@ -8,36 +8,36 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Prepare Environment
+    - name: Setup Environment
       run: |
         sudo apt update
         sudo apt install bc bison build-essential curl flex g++-multilib gcc-multilib git gnupg gperf imagemagick lib32ncurses5-dev lib32readline-dev lib32z1-dev liblz4-tool libncurses5-dev libsdl1.2-dev libssl-dev libxml2 libxml2-utils lzop pngcrush rsync schedtool squashfs-tools xsltproc zip zlib1g-dev repo openjdk-17-jdk -y
 
-    - name: Initialize AOSP Source
+    - name: Init crDroid Source
       run: |
         mkdir rom
         cd rom
         curl https://storage.googleapis.com/git-repo-downloads/repo > repo
         chmod a+x repo
-        ./repo init -u https://android.googlesource.com/platform/manifest -b android-14.0.0_r30 --depth=1
+        ./repo init -u https://github.com/crdroidandroid/android.git -b 14.0 --depth=1
         ./repo sync -c --no-tags --no-clone-bundle --force-sync -j8
 
     - name: Clone Device Trees
       run: |
         cd rom
-        git clone https://github.com/PixelExtended-Devices/device_xiaomi_citrus.git -b fourteen device/xiaomi/citrus
-        git clone https://github.com/PixelExtended-Devices/vendor_xiaomi_citrus.git -b fourteen vendor/xiaomi/citrus
-        git clone https://github.com/PixelExtended-Devices/kernel_xiaomi_sm6115.git -b fourteen kernel/xiaomi/sm6115
+        git clone https://github.com/crdroidandroid/android_device_xiaomi_citrus.git -b 14.0 device/xiaomi/citrus
+        git clone https://github.com/crdroidandroid/android_vendor_xiaomi_citrus.git -b 14.0 vendor/xiaomi/citrus
+        git clone https://github.com/crdroidandroid/android_kernel_xiaomi_sm6115.git -b 14.0 kernel/xiaomi/sm6115
 
-    - name: Build AOSP ROM
+    - name: Start Build
       run: |
         cd rom
         source build/envsetup.sh
-        lunch aosp_citrus-userdebug
+        lunch lineage_citrus-userdebug
         mka bacon -j8
 
-    - name: Upload ROM to Telegram
+    - name: Upload to Telegram
       run: |
         cd rom/out/target/product/citrus
-        ZIP=$(ls aosp_*.zip | head -n 1)
+        ZIP=$(ls crDroid*.zip | head -n 1)
         curl -F document=@"$ZIP" "https://api.telegram.org/bot7713120445:AAEDyx1NDy2lqrTWk90rCqT5kV6ewjStbsc/sendDocument?chat_id=7937734534"
